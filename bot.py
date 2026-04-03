@@ -282,7 +282,24 @@ Gana quien lo adivine en menos intentos. Si los dos fallan o usan los mismos int
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await ayuda(update, context)
 
+def run_web_server():
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"WordleTracker Bot running!")
+        def log_message(self, format, *args):
+            pass
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), Handler)
+    server.serve_forever()
+
 def main():
+    import threading
+    web_thread = threading.Thread(target=run_web_server, daemon=True)
+    web_thread.start()
+
     app = Application.builder().token(TOKEN).build()
     
     app.add_handler(CommandHandler("start", start))
